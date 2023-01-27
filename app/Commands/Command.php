@@ -6,5 +6,5 @@ namespace App\SecurePass\Commands;
 
 interface Command
 {
-    public function exec();
+    public function exec($arg);
 }

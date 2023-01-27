@@ -20,4 +20,8 @@ if (array_key_exists($key, $commands)) {
     exit();
 }
 
-$command->exec();
+if (isset($argv[2])) {
+    $command->exec($argv[2]);
+} else {
+    $command->exec();
+}
