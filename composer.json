@@ -1,6 +1,7 @@
 {
     "autoload": {
         "psr-4": {
+            "SecurePass\\": "config/",
             "App\\SecurePass\\": "app/"
         }
     }

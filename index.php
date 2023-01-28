@@ -1,27 +1,34 @@
 <?php
 
-use App\SecurePass\Commands\Command;
+use SecurePass\App;
 
 require_once __DIR__ . '/vendor/autoload.php';
-$commands = require_once __DIR__ . '/config/commands.php';
 
 if (php_sapi_name() !== 'cli') {
     exit();
 }
 
-$key = $argv[1];
+$app = new App();
 
-/** @var Command $command */
-if (array_key_exists($key, $commands)) {
-    $commandClass = $commands["$key"];
-    $command = new $commandClass();
-} else {
-    echo "Comando inexistente";
-    exit();
-}
+$app->registerCommand("hello", function (array $argv) use ($app) {
+    $name = isset($argv[2]) ? $argv[2] : "World!";
+    $app->getPrinter()->display("Hello $name!!!");
+});
 
-if (isset($argv[2])) {
-    $command->exec($argv[2]);
-} else {
-    $command->exec();
-}
+$app->registerCommand("generate", function (array $argv) use ($app) {
+    $size = isset($argv[2]) ? $argv[2] : 8;
+    $chars = isset($argv[3]) ? $argv[3] : "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=";
+
+    $strLength = strlen($chars);
+    $password = "";
+
+    for ($i = 0; $i < $size; $i++) {
+        $random = mt_rand(0, $strLength - 1);
+        $randomChar = substr($chars, $random, 1);
+        $password .= $randomChar;
+    }
+
+    $app->getPrinter()->display($password);
+});
+
+$app->runCommand($argv);
