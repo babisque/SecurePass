@@ -5,11 +5,12 @@ namespace SecurePass;
 class App
 {
     protected $printer;
-    protected $registry = [];
+    protected $commandRegistry;
 
     public function __construct()
     {
         $this->printer = new CliPrinter();
+        $this->commandRegistry = new CommandRegistry();
     }
 
     public function getPrinter(): CliPrinter
@@ -17,34 +18,33 @@ class App
         return $this->printer;
     }
 
-    public function registerCommand($name, $callable): void
+    public function registerController($name, CommandController $controller): void
     {
-        $this->registry[$name] = $callable;
+        $this->commandRegistry->registerController($name, $controller);
     }
 
-    public function getCommand($command): mixed
+    public function registerCommand($name, $callable): void
     {
-        return isset($this->registry[$command]) ? $this->registry[$command] : null;
+        $this->commandRegistry->register($name, $callable);
     }
 
     /**
      * @param array $argv
      * @return void
      */
-    public function runCommand($argv = []): void
+    public function runCommand($argv = [], $default_command = 'help')
     {
-        $command_name = "help";
+        $command_name = $default_command;
 
         if (isset($argv[1])) {
             $command_name = $argv[1];
         }
 
-        $command = $this->getCommand($command_name);
-        if ($command === null) {
-            $this->getPrinter()->display("ERROR: Command \"$command_name\" not found.");
+        try {
+            call_user_func($this->commandRegistry->getCallable($command_name), $argv);
+        } catch (\Exception $e) {
+            $this->getPrinter()->display("ERROR: " . $e->getMessage());
             exit;
         }
-
-        call_user_func($command, $argv);
     }
 }
